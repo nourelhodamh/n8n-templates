@@ -1,0 +1,889 @@
+{
+  "name": "Leads Follow-Up - Auto Draft Generator",
+  "nodes": [
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "",
+          "mode": "list",
+          "cachedResultName": "",
+          "cachedResultUrl": ""
+        }
+      },
+      "id": "ff7dc1d4-3638-4f5f-aebb-bdd46add36f6",
+      "name": "Read Leads Sheet",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.2,
+      "position": [
+        -3456,
+        -1104
+      ],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "AS2Q2hmpm2bx4OjN",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=You are a sales assistant. Read the following meeting transcript and write a personalized follow-up email based ONLY on the details below. Do not invent or assume any information not provided.\n\nLead details:\n- Name: {{ $json.lead_name }}\n- Company: {{ $json.lead_company }}\n- Sales Rep: {{ $json.lead_sales_rep }}\n\nMeeting Transcript:\n{{ $json.transcript_text }}\n\nRules:\n- Read the transcript carefully\n- Extract the main topic discussed\n- Extract the pain point mentioned\n- Extract any agreed next steps\n- Write a follow-up email of max 6 sentences\n- Reference specific details from the transcript\n- Do NOT use placeholders like [brackets]\n- Return ONLY the email body, no subject line",
+        "batching": {}
+      },
+      "id": "9f58b9af-b288-44fe-9c5d-60063f434b73",
+      "name": "Basic LLM Chain",
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.9,
+      "position": [
+        -1664,
+        -1408
+      ]
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "id": "8c844f16-54dc-495b-b177-7812f151152d",
+      "name": "Google Gemini Chat Model",
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        -1600,
+        -1184
+      ],
+      "credentials": {
+        "googlePalmApi": {
+          "id": "kCbq5pzgfFPbsfcc",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "draft",
+        "subject": "=Following up - {{ $('Transcript Data From Files').item.json.lead_company }}",
+        "message": "={{ $json.text }}",
+        "options": {
+          "sendTo": "={{ $('Read Leads Sheet').item.json.Email }}"
+        }
+      },
+      "id": "641a1d93-3cf0-4716-a712-4407f334421f",
+      "name": "Gmail - Create Draft",
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        -1312,
+        -1408
+      ],
+      "webhookId": "e63353d4-0c9c-49c1-a3a8-58ad878eae11",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "3nwHzQVlF66EQqmG",
+          "name": "Gmail OAuth2 API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 1
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $binary.data.fileExtension }}",
+                    "rightValue": "txt",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "7be65a69-946e-44b2-b490-7aaefd13072b"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Text"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 1
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $binary.data.fileExtension }}",
+                    "rightValue": "pdf",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "0aad0d65-cf73-4847-b010-1241066b7169"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "PDF"
+            }
+          ]
+        },
+        "options": {
+          "fallbackOutput": "extra"
+        }
+      },
+      "id": "47a3ab68-245a-4b39-92f2-aec2c93f90b0",
+      "name": "Switch - File Type",
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3,
+      "position": [
+        -2336,
+        -1424
+      ]
+    },
+    {
+      "parameters": {
+        "url": "={{ 'https://drive.google.com/uc?export=download&id=' + $json['Meeting Transcript'].split('/d/')[1].split('/')[0] }}",
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "file"
+            }
+          }
+        }
+      },
+      "id": "6a288802-b16f-4581-a50c-97d9d5ac5c0e",
+      "name": "HTTP - Download File from Google Drive",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -2560,
+        -1392
+      ],
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "cronExpression",
+              "expression": "0 9 * * 1-5"
+            }
+          ]
+        }
+      },
+      "id": "f2d32b83-670b-4c16-ab1e-8413ab9ee14c",
+      "name": "Daily 9AM Trigger",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        -3680,
+        -1104
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "7ade6b43-3e44-4e65-bb78-8279301a438c",
+              "leftValue": "={{ $json['Current status'] }}",
+              "rightValue": "New",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            },
+            {
+              "id": "541210b8-fda8-4e70-8fa5-e859908bbf09",
+              "leftValue": "={{ $json['Current status'] }}",
+              "rightValue": "Overdue",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "or"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        -3232,
+        -1104
+      ],
+      "id": "765b9375-8a96-4cb7-936f-3c6a4a7d7aa4",
+      "name": "Filter - Active Leads Only"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 1
+          },
+          "conditions": [
+            {
+              "id": "condition1",
+              "leftValue": "={{ $json['Last Contact'] && !isNaN(new Date($json['Last Contact'])) ? Math.floor((new Date() - new Date($json['Last Contact'])) / (1000 * 60 * 60 * 24)) : -1 }}",
+              "rightValue": 5,
+              "operator": {
+                "type": "number",
+                "operation": "gte"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "7ea846b3-d506-47dd-86fa-7f493195ff94",
+      "name": "Filter - 5+ Days No Contact",
+      "type": "n8n-nodes-base.filter",
+      "typeVersion": 2,
+      "position": [
+        -3008,
+        -1120
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 1
+          },
+          "conditions": [
+            {
+              "id": "has-transcript",
+              "leftValue": "={{ $json['Meeting Transcript'] }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "ffc6b92e-7802-48f2-83b8-5d27ac1ef504",
+      "name": "Check - Transcript Exists?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        -2784,
+        -1120
+      ]
+    },
+    {
+      "parameters": {
+        "authentication": "oAuth2",
+        "select": "channel",
+        "channelId": {
+          "__rl": true,
+          "value": "YOUR_SLACK_CHANNEL_ID",
+          "mode": "list",
+          "cachedResultName": "followups-reminders"
+        },
+        "text": "=⚠️ *Missing Transcript!*\n\n*Lead:* {{ $json['Name'] }}\n*Company:* {{ $json['Company'] }}\n*Sales Rep:* {{ $json['Sales Rep'] }}\n*Last Contact:* {{ $json['Last Contact Date'] }}\n\nPlease upload the meeting transcript to Google Drive and update the sheet!",
+        "otherOptions": {}
+      },
+      "id": "8bdbe76a-8cbf-4ce3-a860-f4a8367f4bf8",
+      "name": "Alert - Missing Transcript",
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 2.2,
+      "position": [
+        -2528,
+        -864
+      ],
+      "webhookId": "7700f1f9-775e-4298-96da-a93a465cebc4",
+      "credentials": {
+        "slackOAuth2Api": {
+          "id": "nl9nXWewHZGKhWIL",
+          "name": "Slack OAuth2 API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "authentication": "oAuth2",
+        "select": "channel",
+        "channelId": {
+          "__rl": true,
+          "value": "YOUR_SLACK_CHANNEL_ID",
+          "mode": "list",
+          "cachedResultName": "followups-reminders"
+        },
+        "text": "=❌ *Download Error!*\n\n*Lead:* {{ $('Check - Transcript Exists?').item.json['Name'] }}\n*Company:* {{ $('Check - Transcript Exists?').item.json['Company'] }}\n*Sales Rep:* {{ $('Check - Transcript Exists?').item.json['Sales Rep'] }}\n\nFailed to download transcript from Google Drive.\nPlease check the link and permissions!",
+        "otherOptions": {}
+      },
+      "id": "097f0163-d251-49ca-88f9-6827ef081029",
+      "name": "Alert - Download Failed",
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 2.2,
+      "position": [
+        -2304,
+        -864
+      ],
+      "webhookId": "112cecc4-818d-4c54-8030-2d840a2fe1c2",
+      "credentials": {
+        "slackOAuth2Api": {
+          "id": "nl9nXWewHZGKhWIL",
+          "name": "Slack OAuth2 API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "authentication": "oAuth2",
+        "select": "channel",
+        "channelId": {
+          "__rl": true,
+          "value": "YOUR_SLACK_CHANNEL_ID",
+          "mode": "list",
+          "cachedResultName": "failing-followups"
+        },
+        "text": "=⚠️ *Unsupported File Type!* ⚠️\n\n*Lead:* {{ $('Check - Transcript Exists?').item.json['Name'] }}\n*Company:* {{ $('Check - Transcript Exists?').item.json['Company'] }}\n*Sales Rep:* {{ $('Check - Transcript Exists?').item.json['Sales Rep'] }}\n*File:* {{ $binary.data.fileName }}\n*Type:* {{ $binary.data.fileExtension }}\n\n\nFile format *{{ $binary.data.fileExtension }}* is not supported. Please upload the transcript as PDF, TXT, or MP3 only!\n\n",
+        "otherOptions": {}
+      },
+      "id": "782586d4-d38a-436c-965c-13b3cb419313",
+      "name": "Alert - Unsupported File Type",
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 2.2,
+      "position": [
+        -2064,
+        -864
+      ],
+      "webhookId": "112cecc4-818d-4c54-8030-2d840a2fe1c2",
+      "credentials": {
+        "slackOAuth2Api": {
+          "id": "nl9nXWewHZGKhWIL",
+          "name": "Slack OAuth2 API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "authentication": "oAuth2",
+        "select": "channel",
+        "channelId": {
+          "__rl": true,
+          "value": "YOUR_SLACK_CHANNEL_ID",
+          "mode": "list",
+          "cachedResultName": "followups-reminders"
+        },
+        "text": "=✅ *Follow-Up Draft Ready!*\n\n*Lead:*{{ $('Transcript Data From Files').item.json.lead_name }}\n*Company:* {{ $('Transcript Data From Files').item.json.lead_company }}\n*Sales Rep:* {{ $('Transcript Data From Files').item.json.lead_sales_rep }}\n*Last Contact:* {{ $json.lead_last_contact }}\n\n✉️ Gmail draft is ready — please review and send!",
+        "otherOptions": {}
+      },
+      "id": "7275dc52-2d1b-4716-b588-b0095ee4f49b",
+      "name": "Notify - Draft Ready",
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 2.2,
+      "position": [
+        -864,
+        -1408
+      ],
+      "webhookId": "ddc0be92-0816-43e9-8b49-c16cdbb8fd8d",
+      "credentials": {
+        "slackOAuth2Api": {
+          "id": "nl9nXWewHZGKhWIL",
+          "name": "Slack OAuth2 API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "text",
+        "options": {}
+      },
+      "id": "8fc36981-c0c5-46dc-a0fe-65e9790f681f",
+      "name": "Extract Text: txt",
+      "type": "n8n-nodes-base.extractFromFile",
+      "typeVersion": 1,
+      "position": [
+        -2112,
+        -1504
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "pdf",
+        "options": {}
+      },
+      "id": "7d0fa9a1-488d-4ac4-a061-5e66d9084f88",
+      "name": "Extract Text: Pdf",
+      "type": "n8n-nodes-base.extractFromFile",
+      "typeVersion": 1,
+      "position": [
+        -2112,
+        -1312
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const item = $input.first();\nlet transcriptText = '';\n\n// PDF\nif (item.json.text) {\n  transcriptText = item.json.text;\n}\n// TXT extract node \nelse if (item.json.data && typeof item.json.data === 'string') {\n  transcriptText = item.json.data;\n}\n// TXT binary\nelse if (item.binary?.data?.data) {\n  const buffer = Buffer.from(item.binary.data.data, 'base64');\n  transcriptText = buffer.toString('utf-8').replace(/\\0/g, '').trim();\n}\n\nconst lead = $('Filter - 5+ Days No Contact').item.json;\n\nreturn [{\n  json: {\n    lead_row: lead['row_number'],\n    transcript_text: transcriptText,\n    lead_name: lead['Name'],\n    lead_email: lead['Email'],\n    lead_company: lead['Company'],\n    lead_sales_rep: lead['Sales Rep'],\n    lead_last_contact: lead['Last Contact Date'],\n    lead_product: lead['Product discussed'],\n    lead_pain_point: lead['Pain Point'],\n    lead_next_step: lead['Next Step']\n  }\n}];"
+      },
+      "id": "b7914aba-97d9-42b8-8c2c-bb464f25491b",
+      "name": "Transcript Data From Files",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -1888,
+        -1408
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "",
+          "mode": "list",
+          "cachedResultName": "Leads FollowUp",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/YOUR_SHEET_ID"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/YOUR_SHEET_ID"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Current status": "Draft Created",
+            "row_number": "={{ $('Transcript Data From Files').item.json.lead_row }}",
+            "FollowUp Draft Creation date": "=Draft Created @ {{ new Date().toLocaleString('en-GB') }}"
+          },
+          "matchingColumns": [
+            "row_number"
+          ],
+          "schema": [
+            {
+              "id": "Current status",
+              "displayName": "Current status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Last Contact",
+              "displayName": "Last Contact",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Name",
+              "displayName": "Name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Company",
+              "displayName": "Company",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Email",
+              "displayName": "Email",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Meeting Transcript",
+              "displayName": "Meeting Transcript",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Sales Rep",
+              "displayName": "Sales Rep",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "FollowUp Draft Creation date",
+              "displayName": "FollowUp Draft Creation date",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "row_number",
+              "displayName": "row_number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "readOnly": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        -1088,
+        -1408
+      ],
+      "id": "87ef3b11-c65f-4cce-9947-86361134d3c7",
+      "name": "Update FollowUp Status with Dates",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "AS2Q2hmpm2bx4OjN",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "## DEDUPLICATION\nAfter draft is created, status updates to **Draft Created** so this lead won't trigger again tomorrow.\n\n\n",
+        "height": 352,
+        "width": 464,
+        "color": 6
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -1136,
+        -1568
+      ],
+      "id": "ba67330b-c5ed-4e1d-b6a2-d38e3cad2a17",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "content": "## ERROR HANDLING\nNotify teams on slack for \n- **Missing transcript**\n- **Download failed**\n- **Unsupported file type**",
+        "height": 352,
+        "width": 704,
+        "color": "#542121"
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -2576,
+        -1024
+      ],
+      "id": "64415bf5-9181-4b0f-a2df-9b5c089c17b1",
+      "name": "Sticky Note1"
+    },
+    {
+      "parameters": {
+        "content": "## LEADS FOLLOW-UP WORKFLOW\n\n- Runs every weekday morning \n- Finds leads with no contact for 5+ days.\n- Downloads their meeting transcript.\n- Generates a personalized email with AI.\n- Saves it as a Gmail Draft.",
+        "height": 256,
+        "width": 3520,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -4192,
+        -1568
+      ],
+      "id": "20c38c88-d9d9-4afa-8d87-81bc808736aa",
+      "name": "Sticky Note2"
+    },
+    {
+      "parameters": {
+        "content": "## New Leads From Google Sheet \n**Reads all leads from Google Sheet**\nOnly passes leads where->\n - Status = New or Overdue\n - No contact for 5+ days\n\n**Skips: Draft Created, Sent, Closed**",
+        "height": 400,
+        "width": 880,
+        "color": "#133525"
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -3728,
+        -1312
+      ],
+      "id": "18f14fbf-b03c-4fe0-aedb-c1cde893630e",
+      "name": "Sticky Note3"
+    },
+    {
+      "parameters": {
+        "content": "## Required Google Sheet Columns\n\n| Column | Description |\n|---|---|\n| Current status | Lead status: New, Overdue, Draft Created, Sent, Closed |\n| Last Contact | Date of last contact with the lead |\n| Name | Lead's full name |\n| Company | Lead's company name |\n| Email | Lead's email address |\n| Meeting Transcript | Google Drive link to the meeting transcript |\n| Sales Rep | Name of the sales rep handling this lead |\n| FollowUp Draft Creation date | Auto-filled by workflow when draft is created |",
+        "height": 672,
+        "width": 464,
+        "color": "#415DE6"
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -4192,
+        -1312
+      ],
+      "id": "bb3d4558-77cb-40e5-b0b3-790ea212b7b2",
+      "name": "Sticky Note4"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Read Leads Sheet": {
+      "main": [
+        [
+          {
+            "node": "Filter - Active Leads Only",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Basic LLM Chain": {
+      "main": [
+        [
+          {
+            "node": "Gmail - Create Draft",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Gmail - Create Draft": {
+      "main": [
+        [
+          {
+            "node": "Update FollowUp Status with Dates",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Basic LLM Chain",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch - File Type": {
+      "main": [
+        [
+          {
+            "node": "Extract Text: txt",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Extract Text: Pdf",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Alert - Unsupported File Type",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP - Download File from Google Drive": {
+      "main": [
+        [
+          {
+            "node": "Switch - File Type",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Alert - Download Failed",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Daily 9AM Trigger": {
+      "main": [
+        [
+          {
+            "node": "Read Leads Sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Filter - Active Leads Only": {
+      "main": [
+        [
+          {
+            "node": "Filter - 5+ Days No Contact",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Filter - 5+ Days No Contact": {
+      "main": [
+        [
+          {
+            "node": "Check - Transcript Exists?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check - Transcript Exists?": {
+      "main": [
+        [
+          {
+            "node": "HTTP - Download File from Google Drive",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Alert - Missing Transcript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Notify - Draft Ready": {
+      "main": [
+        []
+      ]
+    },
+    "Extract Text: txt": {
+      "main": [
+        [
+          {
+            "node": "Transcript Data From Files",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract Text: Pdf": {
+      "main": [
+        [
+          {
+            "node": "Transcript Data From Files",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Transcript Data From Files": {
+      "main": [
+        [
+          {
+            "node": "Basic LLM Chain",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update FollowUp Status with Dates": {
+      "main": [
+        [
+          {
+            "node": "Notify - Draft Ready",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "834d408a-e227-4f77-ae17-198247d33043",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": ""
+  },
+  "id": "t9gf3znd8iqseMdO",
+  "tags": []
+}
