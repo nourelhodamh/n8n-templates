@@ -5,4 +5,4 @@ A collection of n8n automation workflows.
 
 | Workflow | Description |
 |---|---|
-| [Leads Follow-Up Auto Draft](./leads-followup-auto-draft) | AI-powered sales follow-up email generator |
+| [Leads Follow-Up Auto Draft](./leads follow-up workflow) | AI-powered sales follow-up email generator |
