@@ -1,32 +1,35 @@
 {
-  "name": "Leads Follow-Up - Auto Draft Generator",
+  "name": "Leads Follow-Up - Auto Draft Generator Published",
   "nodes": [
     {
       "parameters": {
         "documentId": {
           "__rl": true,
           "value": "",
-          "mode": "id"
+          "mode": "list",
+          "cachedResultName": "Leads FollowUp",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/YOUR_SHEET_ID"
         },
         "sheetName": {
           "__rl": true,
-          "value": "",
+          "value": "gid=0",
           "mode": "list",
-          "cachedResultName": "",
-          "cachedResultUrl": ""
-        }
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/YOUR_SHEET_ID"
+        },
+        "options": {}
       },
-      "id": "ff7dc1d4-3638-4f5f-aebb-bdd46add36f6",
+      "id": "47fff186-eb26-4526-96f7-9c726fd303d3",
       "name": "Read Leads Sheet",
       "type": "n8n-nodes-base.googleSheets",
       "typeVersion": 4.2,
       "position": [
-        -3456,
-        -1104
+        912,
+        608
       ],
       "credentials": {
         "googleSheetsOAuth2Api": {
-          "id": "AS2Q2hmpm2bx4OjN",
+          "id": "",
           "name": "Google Sheets account"
         }
       }
@@ -37,30 +40,30 @@
         "text": "=You are a sales assistant. Read the following meeting transcript and write a personalized follow-up email based ONLY on the details below. Do not invent or assume any information not provided.\n\nLead details:\n- Name: {{ $json.lead_name }}\n- Company: {{ $json.lead_company }}\n- Sales Rep: {{ $json.lead_sales_rep }}\n\nMeeting Transcript:\n{{ $json.transcript_text }}\n\nRules:\n- Read the transcript carefully\n- Extract the main topic discussed\n- Extract the pain point mentioned\n- Extract any agreed next steps\n- Write a follow-up email of max 6 sentences\n- Reference specific details from the transcript\n- Do NOT use placeholders like [brackets]\n- Return ONLY the email body, no subject line",
         "batching": {}
       },
-      "id": "9f58b9af-b288-44fe-9c5d-60063f434b73",
+      "id": "e0671f98-f565-4152-ab57-4b12fb445a6c",
       "name": "Basic LLM Chain",
       "type": "@n8n/n8n-nodes-langchain.chainLlm",
       "typeVersion": 1.9,
       "position": [
-        -1664,
-        -1408
+        2896,
+        224
       ]
     },
     {
       "parameters": {
         "options": {}
       },
-      "id": "8c844f16-54dc-495b-b177-7812f151152d",
+      "id": "ed70593b-c282-4435-8b55-60bdf84329a4",
       "name": "Google Gemini Chat Model",
       "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
       "typeVersion": 1,
       "position": [
-        -1600,
-        -1184
+        2960,
+        432
       ],
       "credentials": {
         "googlePalmApi": {
-          "id": "kCbq5pzgfFPbsfcc",
+          "id": "",
           "name": "Google Gemini(PaLM) Api account"
         }
       }
@@ -74,88 +77,21 @@
           "sendTo": "={{ $('Read Leads Sheet').item.json.Email }}"
         }
       },
-      "id": "641a1d93-3cf0-4716-a712-4407f334421f",
+      "id": "c47d58e7-c124-454c-814f-704a0f4abbb2",
       "name": "Gmail - Create Draft",
       "type": "n8n-nodes-base.gmail",
       "typeVersion": 2.1,
       "position": [
-        -1312,
-        -1408
+        3200,
+        224
       ],
       "webhookId": "e63353d4-0c9c-49c1-a3a8-58ad878eae11",
       "credentials": {
         "gmailOAuth2": {
-          "id": "3nwHzQVlF66EQqmG",
-          "name": "Gmail OAuth2 API"
+          "id": "",
+          "name": "Gmail account"
         }
       }
-    },
-    {
-      "parameters": {
-        "rules": {
-          "values": [
-            {
-              "conditions": {
-                "options": {
-                  "caseSensitive": true,
-                  "leftValue": "",
-                  "typeValidation": "strict",
-                  "version": 1
-                },
-                "conditions": [
-                  {
-                    "leftValue": "={{ $binary.data.fileExtension }}",
-                    "rightValue": "txt",
-                    "operator": {
-                      "type": "string",
-                      "operation": "equals"
-                    },
-                    "id": "7be65a69-946e-44b2-b490-7aaefd13072b"
-                  }
-                ],
-                "combinator": "and"
-              },
-              "renameOutput": true,
-              "outputKey": "Text"
-            },
-            {
-              "conditions": {
-                "options": {
-                  "caseSensitive": true,
-                  "leftValue": "",
-                  "typeValidation": "strict",
-                  "version": 1
-                },
-                "conditions": [
-                  {
-                    "leftValue": "={{ $binary.data.fileExtension }}",
-                    "rightValue": "pdf",
-                    "operator": {
-                      "type": "string",
-                      "operation": "equals"
-                    },
-                    "id": "0aad0d65-cf73-4847-b010-1241066b7169"
-                  }
-                ],
-                "combinator": "and"
-              },
-              "renameOutput": true,
-              "outputKey": "PDF"
-            }
-          ]
-        },
-        "options": {
-          "fallbackOutput": "extra"
-        }
-      },
-      "id": "47a3ab68-245a-4b39-92f2-aec2c93f90b0",
-      "name": "Switch - File Type",
-      "type": "n8n-nodes-base.switch",
-      "typeVersion": 3,
-      "position": [
-        -2336,
-        -1424
-      ]
     },
     {
       "parameters": {
@@ -168,13 +104,13 @@
           }
         }
       },
-      "id": "6a288802-b16f-4581-a50c-97d9d5ac5c0e",
+      "id": "f4a33e12-b6a7-4b98-b1d6-15a4a3e2cf04",
       "name": "HTTP - Download File from Google Drive",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [
-        -2560,
-        -1392
+        1808,
+        320
       ],
       "onError": "continueErrorOutput"
     },
@@ -189,13 +125,13 @@
           ]
         }
       },
-      "id": "f2d32b83-670b-4c16-ab1e-8413ab9ee14c",
+      "id": "dbd12111-2d7b-4054-8fb2-b102e1c72e6f",
       "name": "Daily 9AM Trigger",
       "type": "n8n-nodes-base.scheduleTrigger",
       "typeVersion": 1.1,
       "position": [
-        -3680,
-        -1104
+        688,
+        608
       ]
     },
     {
@@ -216,15 +152,6 @@
                 "type": "string",
                 "operation": "equals"
               }
-            },
-            {
-              "id": "541210b8-fda8-4e70-8fa5-e859908bbf09",
-              "leftValue": "={{ $json['Current status'] }}",
-              "rightValue": "Overdue",
-              "operator": {
-                "type": "string",
-                "operation": "equals"
-              }
             }
           ],
           "combinator": "or"
@@ -234,10 +161,10 @@
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.3,
       "position": [
-        -3232,
-        -1104
+        1136,
+        608
       ],
-      "id": "765b9375-8a96-4cb7-936f-3c6a4a7d7aa4",
+      "id": "29ad290e-7839-418e-9bd2-9356dbc70ee5",
       "name": "Filter - Active Leads Only"
     },
     {
@@ -264,13 +191,13 @@
         },
         "options": {}
       },
-      "id": "7ea846b3-d506-47dd-86fa-7f493195ff94",
+      "id": "939b3f2d-12b2-4823-b00d-6fcd5507c812",
       "name": "Filter - 5+ Days No Contact",
       "type": "n8n-nodes-base.filter",
       "typeVersion": 2,
       "position": [
-        -3008,
-        -1120
+        1360,
+        592
       ]
     },
     {
@@ -297,13 +224,13 @@
         },
         "options": {}
       },
-      "id": "ffc6b92e-7802-48f2-83b8-5d27ac1ef504",
+      "id": "88377bcc-0ea1-4cab-abcc-35c5cfd98bc0",
       "name": "Check - Transcript Exists?",
       "type": "n8n-nodes-base.if",
       "typeVersion": 2,
       "position": [
-        -2784,
-        -1120
+        1568,
+        592
       ]
     },
     {
@@ -312,26 +239,26 @@
         "select": "channel",
         "channelId": {
           "__rl": true,
-          "value": "YOUR_SLACK_CHANNEL_ID",
+          "value": "",
           "mode": "list",
           "cachedResultName": "followups-reminders"
         },
         "text": "=⚠️ *Missing Transcript!*\n\n*Lead:* {{ $json['Name'] }}\n*Company:* {{ $json['Company'] }}\n*Sales Rep:* {{ $json['Sales Rep'] }}\n*Last Contact:* {{ $json['Last Contact Date'] }}\n\nPlease upload the meeting transcript to Google Drive and update the sheet!",
         "otherOptions": {}
       },
-      "id": "8bdbe76a-8cbf-4ce3-a860-f4a8367f4bf8",
+      "id": "5a603849-fdc7-4850-8300-80eeff988c50",
       "name": "Alert - Missing Transcript",
       "type": "n8n-nodes-base.slack",
       "typeVersion": 2.2,
       "position": [
-        -2528,
-        -864
+        1920,
+        880
       ],
       "webhookId": "7700f1f9-775e-4298-96da-a93a465cebc4",
       "credentials": {
         "slackOAuth2Api": {
-          "id": "nl9nXWewHZGKhWIL",
-          "name": "Slack OAuth2 API"
+          "id": "Ci19iaLHN7B9fauJ",
+          "name": "Slack account"
         }
       }
     },
@@ -341,26 +268,26 @@
         "select": "channel",
         "channelId": {
           "__rl": true,
-          "value": "YOUR_SLACK_CHANNEL_ID",
+          "value": "",
           "mode": "list",
           "cachedResultName": "followups-reminders"
         },
         "text": "=❌ *Download Error!*\n\n*Lead:* {{ $('Check - Transcript Exists?').item.json['Name'] }}\n*Company:* {{ $('Check - Transcript Exists?').item.json['Company'] }}\n*Sales Rep:* {{ $('Check - Transcript Exists?').item.json['Sales Rep'] }}\n\nFailed to download transcript from Google Drive.\nPlease check the link and permissions!",
         "otherOptions": {}
       },
-      "id": "097f0163-d251-49ca-88f9-6827ef081029",
+      "id": "4e9578bd-5e68-4e62-9e3f-5702ca54fa60",
       "name": "Alert - Download Failed",
       "type": "n8n-nodes-base.slack",
       "typeVersion": 2.2,
       "position": [
-        -2304,
-        -864
+        2192,
+        880
       ],
       "webhookId": "112cecc4-818d-4c54-8030-2d840a2fe1c2",
       "credentials": {
         "slackOAuth2Api": {
-          "id": "nl9nXWewHZGKhWIL",
-          "name": "Slack OAuth2 API"
+          "id": "Ci19iaLHN7B9fauJ",
+          "name": "Slack account"
         }
       }
     },
@@ -370,26 +297,26 @@
         "select": "channel",
         "channelId": {
           "__rl": true,
-          "value": "YOUR_SLACK_CHANNEL_ID",
+          "value": "",
           "mode": "list",
           "cachedResultName": "failing-followups"
         },
         "text": "=⚠️ *Unsupported File Type!* ⚠️\n\n*Lead:* {{ $('Check - Transcript Exists?').item.json['Name'] }}\n*Company:* {{ $('Check - Transcript Exists?').item.json['Company'] }}\n*Sales Rep:* {{ $('Check - Transcript Exists?').item.json['Sales Rep'] }}\n*File:* {{ $binary.data.fileName }}\n*Type:* {{ $binary.data.fileExtension }}\n\n\nFile format *{{ $binary.data.fileExtension }}* is not supported. Please upload the transcript as PDF, TXT, or MP3 only!\n\n",
         "otherOptions": {}
       },
-      "id": "782586d4-d38a-436c-965c-13b3cb419313",
+      "id": "7f36f193-a4a9-4781-9bb5-0d62f031602a",
       "name": "Alert - Unsupported File Type",
       "type": "n8n-nodes-base.slack",
       "typeVersion": 2.2,
       "position": [
-        -2064,
-        -864
+        2464,
+        880
       ],
       "webhookId": "112cecc4-818d-4c54-8030-2d840a2fe1c2",
       "credentials": {
         "slackOAuth2Api": {
-          "id": "nl9nXWewHZGKhWIL",
-          "name": "Slack OAuth2 API"
+          "id": "Ci19iaLHN7B9fauJ",
+          "name": "Slack account"
         }
       }
     },
@@ -399,41 +326,42 @@
         "select": "channel",
         "channelId": {
           "__rl": true,
-          "value": "YOUR_SLACK_CHANNEL_ID",
+          "value": "",
           "mode": "list",
           "cachedResultName": "followups-reminders"
         },
-        "text": "=✅ *Follow-Up Draft Ready!*\n\n*Lead:*{{ $('Transcript Data From Files').item.json.lead_name }}\n*Company:* {{ $('Transcript Data From Files').item.json.lead_company }}\n*Sales Rep:* {{ $('Transcript Data From Files').item.json.lead_sales_rep }}\n*Last Contact:* {{ $json.lead_last_contact }}\n\n✉️ Gmail draft is ready — please review and send!",
+        "text": "=✅ *Follow-Up Draft Ready!*\n\n*Lead:*{{ $('Transcript Data From Files').item.json.lead_name }}\n*Company:* {{ $('Transcript Data From Files').item.json.lead_company }}\n*Sales Rep:* {{ $('Transcript Data From Files').item.json.lead_sales_rep }}\n*Last Contact:* {{ $('Transcript Data From Files').item.json.lead_last_contact }}\n\n✉️ Gmail draft is ready — please review and send!",
         "otherOptions": {}
       },
-      "id": "7275dc52-2d1b-4716-b588-b0095ee4f49b",
+      "id": "2a936d7a-6c29-447f-9415-64ca95569ebf",
       "name": "Notify - Draft Ready",
       "type": "n8n-nodes-base.slack",
       "typeVersion": 2.2,
       "position": [
-        -864,
-        -1408
+        3696,
+        224
       ],
       "webhookId": "ddc0be92-0816-43e9-8b49-c16cdbb8fd8d",
       "credentials": {
         "slackOAuth2Api": {
-          "id": "nl9nXWewHZGKhWIL",
-          "name": "Slack OAuth2 API"
+          "id": "",
+          "name": "Slack account"
         }
       }
     },
     {
       "parameters": {
         "operation": "text",
+        "binaryPropertyName": "=data",
         "options": {}
       },
-      "id": "8fc36981-c0c5-46dc-a0fe-65e9790f681f",
+      "id": "df5df853-a0fb-46e7-999a-8788352fc539",
       "name": "Extract Text: txt",
       "type": "n8n-nodes-base.extractFromFile",
       "typeVersion": 1,
       "position": [
-        -2112,
-        -1504
+        2416,
+        160
       ]
     },
     {
@@ -441,26 +369,13 @@
         "operation": "pdf",
         "options": {}
       },
-      "id": "7d0fa9a1-488d-4ac4-a061-5e66d9084f88",
+      "id": "3b2d3d23-0fb6-4be0-ad5f-a8b2f00e923c",
       "name": "Extract Text: Pdf",
       "type": "n8n-nodes-base.extractFromFile",
       "typeVersion": 1,
       "position": [
-        -2112,
-        -1312
-      ]
-    },
-    {
-      "parameters": {
-        "jsCode": "const item = $input.first();\nlet transcriptText = '';\n\n// PDF\nif (item.json.text) {\n  transcriptText = item.json.text;\n}\n// TXT extract node \nelse if (item.json.data && typeof item.json.data === 'string') {\n  transcriptText = item.json.data;\n}\n// TXT binary\nelse if (item.binary?.data?.data) {\n  const buffer = Buffer.from(item.binary.data.data, 'base64');\n  transcriptText = buffer.toString('utf-8').replace(/\\0/g, '').trim();\n}\n\nconst lead = $('Filter - 5+ Days No Contact').item.json;\n\nreturn [{\n  json: {\n    lead_row: lead['row_number'],\n    transcript_text: transcriptText,\n    lead_name: lead['Name'],\n    lead_email: lead['Email'],\n    lead_company: lead['Company'],\n    lead_sales_rep: lead['Sales Rep'],\n    lead_last_contact: lead['Last Contact Date'],\n    lead_product: lead['Product discussed'],\n    lead_pain_point: lead['Pain Point'],\n    lead_next_step: lead['Next Step']\n  }\n}];"
-      },
-      "id": "b7914aba-97d9-42b8-8c2c-bb464f25491b",
-      "name": "Transcript Data From Files",
-      "type": "n8n-nodes-base.code",
-      "typeVersion": 2,
-      "position": [
-        -1888,
-        -1408
+        2416,
+        304
       ]
     },
     {
@@ -468,10 +383,8 @@
         "operation": "update",
         "documentId": {
           "__rl": true,
-          "value": "",
-          "mode": "list",
-          "cachedResultName": "Leads FollowUp",
-          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/YOUR_SHEET_ID"
+          "mode": "id",
+          "value": ""
         },
         "sheetName": {
           "__rl": true,
@@ -591,97 +504,204 @@
       "type": "n8n-nodes-base.googleSheets",
       "typeVersion": 4.7,
       "position": [
-        -1088,
-        -1408
+        3488,
+        224
       ],
-      "id": "87ef3b11-c65f-4cce-9947-86361134d3c7",
+      "id": "e948726f-ff38-4b9e-be13-9a6e2d983a31",
       "name": "Update FollowUp Status with Dates",
       "credentials": {
         "googleSheetsOAuth2Api": {
-          "id": "AS2Q2hmpm2bx4OjN",
+          "id": "",
           "name": "Google Sheets account"
         }
       }
     },
     {
       "parameters": {
-        "content": "## DEDUPLICATION\nAfter draft is created, status updates to **Draft Created** so this lead won't trigger again tomorrow.\n\n\n",
-        "height": 352,
-        "width": 464,
-        "color": 6
+        "content": "## 4. Deduplication\nAfter draft is created, status updates to **Draft Created** so this lead won't trigger again tomorrow.\n\n\n",
+        "height": 528,
+        "width": 512,
+        "color": 7
       },
       "type": "n8n-nodes-base.stickyNote",
       "typeVersion": 1,
       "position": [
-        -1136,
-        -1568
+        3408,
+        0
       ],
-      "id": "ba67330b-c5ed-4e1d-b6a2-d38e3cad2a17",
+      "id": "c6d08836-7312-4735-b77d-75b118f83046",
       "name": "Sticky Note"
     },
     {
       "parameters": {
-        "content": "## ERROR HANDLING\nNotify teams on slack for \n- **Missing transcript**\n- **Download failed**\n- **Unsupported file type**",
-        "height": 352,
-        "width": 704,
-        "color": "#542121"
+        "content": "## Error Handling\nNotify teams on slack for\n- **Missing transcript**\n- **Download failed**\n- **Unsupported file type**",
+        "height": 400,
+        "width": 884,
+        "color": 7
       },
       "type": "n8n-nodes-base.stickyNote",
       "typeVersion": 1,
       "position": [
-        -2576,
-        -1024
+        1808,
+        672
       ],
-      "id": "64415bf5-9181-4b0f-a2df-9b5c089c17b1",
+      "id": "db720a8e-8bd6-44e6-8ef6-8cd343d49f1e",
       "name": "Sticky Note1"
     },
     {
       "parameters": {
-        "content": "## LEADS FOLLOW-UP WORKFLOW\n\n- Runs every weekday morning \n- Finds leads with no contact for 5+ days.\n- Downloads their meeting transcript.\n- Generates a personalized email with AI.\n- Saves it as a Gmail Draft.",
-        "height": 256,
-        "width": 3520,
-        "color": 5
-      },
-      "type": "n8n-nodes-base.stickyNote",
-      "typeVersion": 1,
-      "position": [
-        -4192,
-        -1568
-      ],
-      "id": "20c38c88-d9d9-4afa-8d87-81bc808736aa",
-      "name": "Sticky Note2"
-    },
-    {
-      "parameters": {
-        "content": "## New Leads From Google Sheet \n**Reads all leads from Google Sheet**\nOnly passes leads where->\n - Status = New or Overdue\n - No contact for 5+ days\n\n**Skips: Draft Created, Sent, Closed**",
+        "content": "## 1. Read & Filter Leads\n\nRuns every weekday at 9AM. Reads all leads from Google Sheet and filter rows by:\n- **Status** = New  ––  **Skips:** Draft Created, Sent, Closed\n- **No contact** for 5+ days\n- **Transcript link** exists\n",
         "height": 400,
-        "width": 880,
-        "color": "#133525"
+        "width": 1104,
+        "color": 7
       },
       "type": "n8n-nodes-base.stickyNote",
       "typeVersion": 1,
       "position": [
-        -3728,
-        -1312
+        640,
+        400
       ],
-      "id": "18f14fbf-b03c-4fe0-aedb-c1cde893630e",
+      "id": "13ec7869-9af8-4371-8df7-27e4bdacbaaf",
       "name": "Sticky Note3"
     },
     {
       "parameters": {
-        "content": "## Required Google Sheet Columns\n\n| Column | Description |\n|---|---|\n| Current status | Lead status: New, Overdue, Draft Created, Sent, Closed |\n| Last Contact | Date of last contact with the lead |\n| Name | Lead's full name |\n| Company | Lead's company name |\n| Email | Lead's email address |\n| Meeting Transcript | Google Drive link to the meeting transcript |\n| Sales Rep | Name of the sales rep handling this lead |\n| FollowUp Draft Creation date | Auto-filled by workflow when draft is created |",
-        "height": 672,
-        "width": 464,
-        "color": "#415DE6"
+        "content": "## LEADS FOLLOW-UP WORKFLOW\n\nThis workflow automatically identifies leads that require follow-up and generates personalized emails using AI, saved as drafts for human review. The team is notified on Slack when a draft is ready.\n\n- Runs every weekday morning\n- Finds leads with no contact for 5+ days\n- Downloads their meeting transcript\n- Generates a personalized email with AI\n- Saves it as a Gmail Draft\n\n**Who is it for?**\nSales teams who need to follow up regularly with specific leads.\n\n---\n\n### Setup Steps\n- [ ] Replace YOUR_SHEET_ID with your Google Sheet ID \n- [ ] Update the Google Sheet column names in the filter nodes to match your sheet\n- [ ] Set up Google Gemini credentials for AI processing nodes\n- [ ] Set up Slack credentials and update channel IDs in all alert nodes\n- [ ] Connect your Gmail account to the Gmail nodes\n\n### Customization\n- You can extend supported file types to include voice notes (MP3) via Gemini transcription\n- This workflow can be adapted for any follow-up use case: feedback collection, deadline reminders, onboarding check-ins, etc.\n\n---\n\n## Required Google Sheet Columns\n\n| Column | Description |\n|---|---|\n| Current status | Lead status: New, Draft Created, Sent, Closed |\n| Last Contact | Date of last contact with the lead |\n| Name | Lead's full name |\n| Company | Lead's company name |\n| Email | Lead's email address |\n| Meeting Transcript |    Google Drive link to the meeting doc |\n| Sales Rep | Name of the sales rep handling this lead |\n| FollowUp Draft Creation date | Auto-filled by workflow when draft is created |",
+        "height": 960,
+        "width": 624
       },
       "type": "n8n-nodes-base.stickyNote",
       "typeVersion": 1,
       "position": [
-        -4192,
-        -1312
+        0,
+        0
       ],
-      "id": "bb3d4558-77cb-40e5-b0b3-790ea212b7b2",
+      "id": "bfa097d5-5ec9-4266-b823-c041df77c4b4",
       "name": "Sticky Note4"
+    },
+    {
+      "parameters": {
+        "content": "## 2. Download, Route & Extract Meetings Docs\nDownloads the meeting transcript from Google Drive and routes it by file type.\n\n**Supported formats:**\n- TXT \n- PDF \n\n**If unsupported format →** Slack alert sent to team",
+        "height": 544,
+        "width": 1044,
+        "color": 7
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1760,
+        -16
+      ],
+      "id": "36dc61d2-3db2-45fd-80c6-438df8066e8a",
+      "name": "Sticky Note5"
+    },
+    {
+      "parameters": {
+        "content": "## 3. AI Email Generation\n\nUses Google Gemini to write a personalized follow-up email based on the transcript.\nSaves the output as a **Gmail Draft** — not sent automatically.",
+        "height": 592,
+        "width": 512,
+        "color": 7
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        2848,
+        0
+      ],
+      "id": "e7da4805-ffb2-460d-8666-a817842f14be",
+      "name": "Sticky Note2"
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "let transcriptText = '';\n\nif ($json.text) {\n  transcriptText = $json.text;\n} else if ($json.data && typeof $json.data === 'string') {\n  transcriptText = $json.data;\n} else if ($binary?.data?.data) {\n  const buffer = Buffer.from($binary.data.data, 'base64');\n  transcriptText = buffer.toString('utf-8').replace(/\\0/g, '').trim();\n}\n\nconst lead = $('Check - Supported File Type').item.json;\n\nreturn {\n  lead_row: lead['row_number'],\n  transcript_text: transcriptText,\n  lead_name: lead['Name'],\n  lead_email: lead['Email'],\n  lead_company: lead['Company'],\n  lead_sales_rep: lead['Sales Rep'],\n  lead_last_contact: lead['Last Contact'],  \n};"
+      },
+      "id": "79865dc7-69fb-4aa8-ae64-b41e2980b81d",
+      "name": "Transcript Data From Files",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2640,
+        224
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "a992bcb5-8506-4e2c-a6c9-df8d7a1566cf",
+              "leftValue": "={{ $binary.data.fileExtension }}",
+              "rightValue": "txt",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            },
+            {
+              "id": "ac99ac4f-9092-45fe-b242-874fccc2f4f8",
+              "leftValue": "={{ $binary.data.fileExtension }}",
+              "rightValue": "pdf",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            }
+          ],
+          "combinator": "or"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        2000,
+        304
+      ],
+      "id": "459558c9-84af-480e-a34a-9cafe07f6982",
+      "name": "Check - Supported File Type"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "2470c363-afe3-4733-baf3-f134fbce6fa3",
+              "leftValue": "={{ $binary.data.fileExtension }}",
+              "rightValue": "txt",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        2208,
+        224
+      ],
+      "id": "a4dbac67-de7e-46b6-b37f-791a412c4966",
+      "name": "Route - Is TXT?"
     }
   ],
   "pinData": {},
@@ -730,36 +750,11 @@
         ]
       ]
     },
-    "Switch - File Type": {
-      "main": [
-        [
-          {
-            "node": "Extract Text: txt",
-            "type": "main",
-            "index": 0
-          }
-        ],
-        [
-          {
-            "node": "Extract Text: Pdf",
-            "type": "main",
-            "index": 0
-          }
-        ],
-        [
-          {
-            "node": "Alert - Unsupported File Type",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
     "HTTP - Download File from Google Drive": {
       "main": [
         [
           {
-            "node": "Switch - File Type",
+            "node": "Check - Supported File Type",
             "type": "main",
             "index": 0
           }
@@ -824,11 +819,6 @@
         ]
       ]
     },
-    "Notify - Draft Ready": {
-      "main": [
-        []
-      ]
-    },
     "Extract Text: txt": {
       "main": [
         [
@@ -851,6 +841,17 @@
         ]
       ]
     },
+    "Update FollowUp Status with Dates": {
+      "main": [
+        [
+          {
+            "node": "Notify - Draft Ready",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
     "Transcript Data From Files": {
       "main": [
         [
@@ -862,11 +863,36 @@
         ]
       ]
     },
-    "Update FollowUp Status with Dates": {
+    "Check - Supported File Type": {
       "main": [
         [
           {
-            "node": "Notify - Draft Ready",
+            "node": "Route - Is TXT?",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Alert - Unsupported File Type",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Route - Is TXT?": {
+      "main": [
+        [
+          {
+            "node": "Extract Text: txt",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Extract Text: Pdf",
             "type": "main",
             "index": 0
           }
@@ -877,13 +903,14 @@
   "active": false,
   "settings": {
     "executionOrder": "v1",
-    "binaryMode": "separate"
+    "binaryMode": "separate",
+    "availableInMCP": false
   },
-  "versionId": "834d408a-e227-4f77-ae17-198247d33043",
+  "versionId": "7c8acf75-b5be-41f2-ba6d-9edca1adb638",
   "meta": {
     "templateCredsSetupCompleted": true,
     "instanceId": ""
   },
-  "id": "t9gf3znd8iqseMdO",
+  "id": "SAR8bH9kVKARWSj4",
   "tags": []
 }
