@@ -12,7 +12,7 @@
 ## Required Google Sheet Columns
 | Column | Description |
 |---|---|
-| Current status | New, Overdue, Draft Created, Sent, Closed |
+| Current status | New, Draft Created, Sent, Closed |
 | Last Contact | Date of last contact |
 | Name | Lead's full name |
 | Company | Lead's company name |
